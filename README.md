@@ -1,9 +1,13 @@
 # judge_api
 sinatraとdockerで作ったジャッジサーバーAPIです。
+対応言語はC,C++,Ruby,Python
 
 #初期設定
 ```
 bundle install
+docker pull gcc:latest
+docker pull ruby:latest
+docker pull python:latest
 ```
 
 #実行方法
