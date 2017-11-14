@@ -15,12 +15,12 @@ def judge lang, code, input, ans
   when 'c'
     file_name = "main.c"
     container = create_container('gcc:latest', file_name, code, input)
-    ce = container.exec(["sh", "-c", "gcc #{file_name}"]).last != 0
+    ce = container.exec(["bash", "-c", "timeout -s 9 10 gcc #{file_name}"]).last != 0
     exec_cmd = './a.out'
   when 'cpp'
     file_name = "main.cpp"
     container = create_container('gcc:latest', file_name, code, input)
-    ce = container.exec(["sh", "-c", "g++ #{file_name}"]).last != 0
+    ce = container.exec(["timeout", "10", "bash", "-c", "g++ #{file_name}"]).last != 0
     exec_cmd = './a.out'
   when 'py'
     file_name = "main.py"
@@ -34,13 +34,17 @@ def judge lang, code, input, ans
 
   return 'CE' if ce
   sleep(0.005)
-  result = container.exec(["sh", "-c", "timeout -s 9 2 #{exec_cmd} < input.txt"])
+  p result = container.exec(["timeout","30", "bash", "-c", "time #{exec_cmd} < input.txt"])
   container.delete(force: true)
+
   case result.last
-  when 1
-    return 'RE'
   when 0
-    return result[0][0] == ans ? 'AC' : 'WA'
+    time = result[1][0].split[3].split("m")[1].to_f
+    case
+    when (result[0][0] == ans && time <= 2.0) then return 'AC'
+    when (result[0][0] == ans && time >  2.0) then return 'TLE'
+    when (result[0][0] != ans)                then return 'WA'
+    end
   else
     return 'RE'
   end
@@ -48,7 +52,6 @@ end
 
 def create_container image_name, file_name, code, input
   memory = 500 * 1024 * 1024
-  data_size = 256 * 1024
   options = {
     'Image' => image_name,
     'Tty' => true,
@@ -60,7 +63,6 @@ def create_container image_name, file_name, code, input
   }
   container = Docker::Container.create(options)
   container.start
-  container.exec(["ulimit","-u","50","-d", "#{data_size}", "-t", "10"])
   container.store_file("/tmp/#{file_name}", code)
   container.store_file("/tmp/input.txt", input)
   return container
