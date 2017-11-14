@@ -15,7 +15,7 @@ def judge lang, code, input, ans
   when 'c'
     file_name = "main.c"
     container = create_container('gcc:latest', file_name, code, input)
-    ce = container.exec(["bash", "-c", "timeout -s 9 10 gcc #{file_name}"]).last != 0
+    ce = container.exec(["timeout", "10", "bash", "-c", "gcc #{file_name}"]).last != 0
     exec_cmd = './a.out'
   when 'cpp'
     file_name = "main.cpp"
