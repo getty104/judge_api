@@ -15,12 +15,12 @@ def judge lang, code, input, ans
   when 'c'
     file_name = "main.c"
     container = create_container 'gcc:latest', file_name, code, input
-    ce = container.exec(["gcc", file_name]).last == 1
+    ce = container.exec(["sh", "-c", "timeout -s 9 2 gcc #{file_name}"]).last == 1
     exec_cmd = './a.out'
   when 'cpp'
     file_name = "main.cpp"
     container = create_container 'gcc:latest', file_name, code, input
-    ce = container.exec(["g++", file_name]).last == 1
+    ce = container.exec(["sh", "-c", "timeout -s 9 2 g++ #{file_name}"]).last == 1
     exec_cmd = './a.out'
   when 'py'
     file_name = "main.py"
