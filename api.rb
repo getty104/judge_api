@@ -34,7 +34,7 @@ def judge lang, code, input, ans
 
   return 'CE' if ce
   sleep(0.005)
-  p result = container.exec(["timeout","30", "bash", "-c", "time #{exec_cmd} < input.txt"])
+  result = container.exec(["timeout", "30", "bash", "-c", "time #{exec_cmd} < input.txt"])
   container.delete(force: true)
 
   case result.last
@@ -56,7 +56,7 @@ def create_container image_name, file_name, code, input
     'Image' => image_name,
     'Tty' => true,
     'HostConfig' => {
-      'Memory' => memory ,
+      'Memory' => memory,
       'PidsLimit' => 10
     },
     'WorkingDir' => '/tmp'
