@@ -6,7 +6,14 @@ post '/exec' do
   if body["lang"] == nil || body["code"] == nil  || body["input"] == nil || body["ans"] == nil
     status 400
   else
-    return {result: judge(body["lang"], body["code"], body["input"], body["ans"])}.to_json
+    #return {result: judge(body["lang"], body["code"], body["input"], body["ans"])}.to_json
+    return {result: judge('java', <<-EOS, body["input"], body["ans"])}.to_json
+    public class Main {
+      public static void main(String[] args) {
+        System.out.print("test");
+      }
+    }
+    EOS
   end
 end
 
@@ -15,12 +22,12 @@ def judge lang, code, input, ans
   when 'c'
     file_name = "main.c"
     container = create_container 'gcc:latest', file_name, code, input
-    ce = container.exec(["sh", "-c", "timeout -s 9 2 gcc #{file_name}"]).last == 0
+    ce = container.exec(["sh", "-c", "timeout -s 9 5 gcc #{file_name}"]).last == 0
     exec_cmd = './a.out'
   when 'cpp'
     file_name = "main.cpp"
     container = create_container 'gcc:latest', file_name, code, input
-    ce = container.exec(["sh", "-c", "timeout -s 9 2 g++ #{file_name}"]).last == 0
+    ce = container.exec(["sh", "-c", "timeout -s 9 5 g++ #{file_name}"]).last == 0
     exec_cmd = './a.out'
   when 'py'
     file_name = "main.py"
@@ -30,6 +37,12 @@ def judge lang, code, input, ans
     file_name = "main.rb"
     container = create_container 'ruby:latest', file_name, code, input
     exec_cmd = "ruby #{file_name}"
+  when 'java'
+    file_name = "Main.java"
+    class_name = "Main"
+    container = create_container 'java:latest', file_name, code, input
+    ce = container.exec(["sh", "-c", "timeout -s 9 5 javac #{file_name}"])
+    exec_cmd = "java #{class_name}"
   end
 
   return 'CE' unless ce

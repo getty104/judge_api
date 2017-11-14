@@ -8,6 +8,7 @@ bundle install
 docker pull gcc:latest
 docker pull ruby:latest
 docker pull python:latest
+docker pull java:latest
 ```
 
 #実行方法
